@@ -55,7 +55,7 @@ def main():
 
     try:
         error_message = json.dumps(response.json(), indent=2)
-    except:
+    except json.JSONDecodeError:
         error_message = response.text
     raise Exception(f"GitHub API status {response.status_code}: {error_message}")
 

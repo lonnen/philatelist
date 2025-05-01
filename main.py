@@ -24,11 +24,17 @@ def main():
         help="""(optional) GitHub personal access token - see:
         https://docs.github.com/en/rest/authentication/authenticating-to-the-rest-api""",
     )
+    parser.add_argument('-v', '--verbose', action='store_true')
 
     args = parser.parse_args()
 
     username = args.username
     token = args.token
+    verbose = args.verbose
+    if verbose:
+        print("VERBOSE=TRUE")
+        print(f"USERNAME: {username}")
+        print(f"TOKEN: {token}")
     if not token:
         print("WARNING: No GitHub Token. Rate limiting may occur.")
         print("Re-run with --help for more information")

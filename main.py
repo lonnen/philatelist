@@ -8,7 +8,12 @@ GITHUB_API_URL = "https://api.github.com/graphql"
 
 def main():
     parser = argparse.ArgumentParser(
-        description="collect a single user's commits from GitHub"
+        description="""collect a single user's commits from GitHub
+        
+        Because of aggressive rate limiting it is highly recommended that users provide
+        a personal access token. The token should have read permissions for repo,
+        org, gist, user, user:email, and project.
+        """
     )
     parser.add_argument("username", help="GitHub username of interest")
     parser.add_argument(

@@ -4,7 +4,35 @@ import os
 
 import requests
 
-GITHUB_API_URL = "https://api.github.com/graphql"
+
+class GitHubAPI:
+    GITHUB_API_URL = "https://api.github.com/graphql"
+
+    headers = {"Content-Type": "application/json", "User-Agent": "philatelist"}
+
+    def __init__(self, token=None):
+        self.token = token
+        if self.token:
+            self.headers["Authorization"] = f"Bearer {self.token}"
+
+    def query(self, query, variables):
+        """Query the GitHub GraphQL API"""
+
+        response = requests.post(
+            self.GITHUB_API_URL,
+            headers=self.headers,
+            json={"query": query, "variables": variables},
+        )
+
+        if response.status_code == 200:
+            return response.json()
+
+        try:
+            error_message = json.dumps(response.json(), indent=2)
+        except json.JSONDecodeError:
+            error_message = response.text
+        raise Exception(f"GitHub API status {response.status_code}: {error_message}")
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -38,32 +66,10 @@ def main():
     if not token:
         print("WARNING: No GitHub Token. Rate limiting may occur.")
         print("Re-run with --help for more information")
+    
+    api = GitHubAPI()
+    return api.query({}, {})
 
-    headers = {
-        "Content-Type": "application/json",
-        "User-Agent": "philatelist"
-    }
-
-    if token:
-        headers["Authorization"] = f"Bearer {token}"
-
-    response = requests.post(
-        GITHUB_API_URL,
-        headers=headers,
-        json={
-            "query": "",
-            "variables": ""
-        }
-    )
-
-    if response.status_code == 200:
-        return response.json()
-
-    try:
-        error_message = json.dumps(response.json(), indent=2)
-    except json.JSONDecodeError:
-        error_message = response.text
-    raise Exception(f"GitHub API status {response.status_code}: {error_message}")
 
 if __name__ == "__main__":
     main()

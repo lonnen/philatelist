@@ -52,7 +52,7 @@ def main():
         help="""(optional) GitHub personal access token - see:
         https://docs.github.com/en/rest/authentication/authenticating-to-the-rest-api""",
     )
-    parser.add_argument('-v', '--verbose', action='store_true')
+    parser.add_argument("-v", "--verbose", action="store_true")
 
     args = parser.parse_args()
 

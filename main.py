@@ -67,9 +67,81 @@ def main():
     if not token:
         print("WARNING: No GitHub Token. Rate limiting may occur.")
         print("Re-run with --help for more information")
-    
-    api = GitHubAPI()
-    return api.query({}, {})
+
+    api = GitHubAPI(token)
+
+    repositories = []
+    has_next_page = True
+    end_cursor = None
+    RESULTS_PER_PAGE = 100
+
+    query = """
+    query UserRepositories($username: String!, $perPage: Int!, $cursor: String) {
+      user(login: $username) {
+        repositories(first: $perPage, after: $cursor, privacy: PUBLIC, orderBy: {field: UPDATED_AT, direction: DESC}) {
+          totalCount
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
+          nodes {
+            name
+            description
+            updatedAt
+            createdAt
+            licenseInfo {
+              name
+            }
+          }
+        }
+      }
+    }
+    """
+
+    while has_next_page:
+        variables = {
+            "username": username,
+            "perPage": RESULTS_PER_PAGE,
+            "cursor": end_cursor,
+        }
+
+        try:
+            if verbose:
+                print(f"Fetching first {RESULTS_PER_PAGE} repositories")
+            response = api.query(query, variables)
+
+            if response.get("errors"):
+                error_messages = ", ".join([e["message"] for e in response["errors"]])
+                raise Exception(error_messages)
+
+            user_data = response["data"]["user"]
+
+            if not user_data:
+                raise Exception(f"User '{username}' not found")
+
+            repo_data = user_data["repositories"]
+            nodes = repo_data["nodes"]
+            page_info = repo_data["pageInfo"]
+            total_count = repo_data["totalCount"]
+
+            repositories.extend(nodes)
+
+            if len(repositories) == total_count or not page_info["hasNextPage"]:
+                has_next_page = False
+                if verbose:
+                    print(f"Fetched all {len(repositories)} repositories")
+            else:
+                end_cursor = page_info["endCursor"]
+                if verbose:
+                    print(
+                        f"Fetched {len(repositories)} of {total_count} repositories..."
+                    )
+
+        except Exception as e:
+            print(f"Error fetching repositories: {str(e)}")
+            sys.exit(1)
+
+    return repositories
 
 
 if __name__ == "__main__":

@@ -1,6 +1,8 @@
 import argparse
+import csv
 import json
 import os
+import sys
 
 import requests
 
@@ -145,4 +147,36 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        repositories = main()
+        print(f"Total repositories: {len(repositories)}")
+        print("Repository Information:")
+
+        # CSV
+        for r in repositories:
+            if isinstance(r['licenseInfo'], dict):
+                r["license"] = r["licenseInfo"]["name"]
+            else:
+                r["license"] = None
+            del r["licenseInfo"]
+        fieldnames = ['name', 'description', 'updatedAt', 'createdAt', 'license']
+        writer = csv.DictWriter(sys.stdout, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(repositories)
+
+        # JSON output
+        #print(json.dumps(repositories, indent=2))
+
+        # Formatted Text
+        # for i, repo in enumerate(repositories, 1):
+        #     print(f"{i}. {repo['name']}")
+        #     description = repo.get("description") or "(No description)"
+        #     print(f"   Description: {description}")
+        #     print(f"   License: {license})
+        #     print(f"   Last Updated: {updatedAt})
+        #     print(f"   Created: {createdAt})
+        #     print()
+
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        sys.exit(1)

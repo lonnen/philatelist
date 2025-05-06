@@ -60,9 +60,10 @@ def main():
     token = args.token
     verbose = args.verbose
     if verbose:
-        print("VERBOSE=TRUE")
-        print(f"USERNAME: {username}")
-        print(f"TOKEN: {token}")
+        print("Initialized with the following config:")
+        print("    VERBOSE=TRUE")
+        print(f"    USERNAME: {username}")
+        print(f"    TOKEN: {token}")
     if not token:
         print("WARNING: No GitHub Token. Rate limiting may occur.")
         print("Re-run with --help for more information")
